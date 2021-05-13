@@ -135,8 +135,8 @@ bool Matching::Update(const CloudData& cloud_data, Eigen::Matrix4f& cloud_pose) 
     pcl::transformPointCloud(*cloud_data.cloud_ptr, *current_scan_ptr_, cloud_pose);
 
     // 更新相邻两帧的相对运动
-    step_pose = last_pose.inverse() * cloud_pose;
-    predict_pose = cloud_pose * step_pose;
+    step_pose = last_pose.inverse() * cloud_pose;//当前帧在上一帧坐标系下的pose，相对pose
+    predict_pose = cloud_pose * step_pose;//相邻帧相对pose转换到W系
     last_pose = cloud_pose;
 
     // 匹配之后判断是否需要更新局部地图
@@ -145,6 +145,8 @@ bool Matching::Update(const CloudData& cloud_data, Eigen::Matrix4f& cloud_pose) 
         if (fabs(cloud_pose(i, 3) - edge.at(2 * i)) > 50.0 &&
             fabs(cloud_pose(i, 3) - edge.at(2 * i + 1)) > 50.0)
             continue;
+
+        //函数内部更新局部地图用于配准
         ResetLocalMap(cloud_pose(0,3), cloud_pose(1,3), cloud_pose(2,3));
         break;
     }
